@@ -149,7 +149,218 @@ plt.show()
 ![image](https://github.com/AcoranGonzalezMoray/VisionArtificial/assets/99484843/8ce70760-770f-4330-94c3-ae3a3fb112be)
 
 ## Tarea 4: Modifica de alguna forma los valores de un plano de la imagen
-en el siguiente código mostrado más abajo
+Este código utiliza OpenCV para capturar video desde una cámara, ajusta el canal rojo para realzar colores no blancos en cada fotograma, y muestra dos ventanas en tiempo real: una con la imagen modificada y otra con la imagen original.
+```python
+vid = cv2.VideoCapture(0)
+  
+while(True):      
+    # fotograma a fotograma
+    ret, frame = vid.read()
+
+    if ret:
+        #Separamos canales
+        b = frame[:,:,0]
+        g = frame[:,:,1]
+        r = frame[:,:,2]
+        
+        # Modifica el canal azul (B) ,De esta manera, solo los píxeles que no eran blancos 
+        # originalmente se verán afectados, y los píxeles blancos no cambiarán de color.
+        r[r < 200] += 55
+
+        # Clip para asegurarse de que los valores estén en el rango [0, 255]
+        r = np.clip(r, 0, 255)
+        
+
+        #Dimensiones
+        h, w, c = frame.shape
+
+        #Concateamos en horizontal los tres planos del fotograma por separado y el frame con los 3 planos superpuesto
+        collage = np.hstack((r, g, b))
+    
+        # Muestra fotograma redimensionando a la mitad para que quepa en pantalla
+        cv2.imshow('Cam3', cv2.resize(collage, (int(w*1.5),int(h/2)),cv2.INTER_NEAREST))
+        
+        #Ademas mostramos el frame original para observar que uno de los 3 planos cambio
+        cv2.imshow('Cam4', frame)
+    
+    # Detenemos pulsado ESC
+    if cv2.waitKey(20) == 27:
+        break
+  
+# Libera el objeto de captura
+vid.release()
+# Destruye ventanas
+cv2.destroyAllWindows()
+```
+
+## Tarea 5 - PARTE 1:  Pintar círculos en las posiciones del píxel más claro y oscuro de la imagen.
+En este código realizamos un fotograma en tiempo real usando nuestra cámera, en cada fotograma detectamos el pixel más oscuro y el más claro en escalas de grises.
+
+```python
+vid = cv2.VideoCapture(0)
+
+# Tipografía para mostrar texto
+font = cv2.FONT_HERSHEY_SIMPLEX
+  
+lanzado = 0
+px = -1
+while(True):      
+    # fotograma a fotograma
+    ret, frame = vid.read()
+
+    if ret: 
+        # Activa em manejador en el primer fotograma
+        if lanzado == 0:
+            # Muestra fotograma
+            cv2.imshow('Cam', frame)   
+            # Define el nombre del manejador del evento
+            cv2.setMouseCallback('Cam', mouse_events)
+            lanzado = 1
+
+        # Encuentra los píxeles más claros y oscuros en la imagen
+        
+        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        #  Convierte el fotograma actual (frame) de una imagen en color (BGR) a una imagen en escala de grises.
+        #  Esto es necesario para calcular los valores más claros y oscuros de la imagen en escala de grises
 
 
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(gray_frame)
+        #Basicamente se obtienen los valores más claros y oscuros del frame ademas del su posicion
+
+        # Dibuja círculos en las posiciones de los píxeles más claros y oscuros
+        cv2.circle(frame, min_loc, 10, (0, 0, 255), -1)  # Círculo rojo en el píxel más oscuro
+        cv2.circle(frame, max_loc, 10, (0, 255, 0), -1)  # Círculo verde en el píxel más claro
+
+        # Muestra valores RGB intentando centrar en el puntero
+        if px > -1:
+            cv2.putText(frame, '{}'.format(R), (px-45,py-5), font, 0.5, (0, 0, 255), 1)
+            cv2.putText(frame, '     {}'.format(G), (px-54,py-5), font, 0.5, (0, 255, 0), 1)
+            cv2.putText(frame, '         {}'.format(B), (px-54,py-5), font, 0.5, (255, 0, 0), 1)
+            
+        cv2.imshow('Cam', frame)   
+        
+    # Detenemos pulsado ESC
+    if cv2.waitKey(20) == 27:
+        break
+  
+# Libera el objeto de captura
+vid.release()
+# Destruye ventanas
+cv2.destroyAllWindows()
+```
+
+
+## Tarea 5 - PARTE 2: ¿Si quisieras hacerlo sobre la zona 8x8 más clara/oscura?
+Si queremos cumplir el mismo objetivo pero sobre una zona de 8x8 más claro/oscuro, ejecutaremos el siguiente código:
+
+```python
+vid = cv2.VideoCapture(0)
+
+# Tipografía para mostrar texto
+font = cv2.FONT_HERSHEY_SIMPLEX
+  
+lanzado = 0
+px = -1
+while(True):      
+    # fotograma a fotograma
+    ret, frame = vid.read()
+
+    if ret: 
+        # Activa em manejador en el primer fotograma
+        if lanzado == 0:
+            # Muestra fotograma
+            cv2.imshow('Cam', frame)   
+            # Define el nombre del manejador del evento
+            cv2.setMouseCallback('Cam', mouse_events)
+            lanzado = 1
+
+        # Encuentra los píxeles más claros y oscuros en la imagen
+        
+        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        #  Convierte el fotograma actual (frame) de una imagen en color (BGR) a una imagen en escala de grises.
+        #  Esto es necesario para calcular los valores más claros y oscuros de la imagen en escala de grises
+
+        # Encuentra las coordenadas (esquinas superiores izquierda) de las regiones más clara y oscura
+        min_loc = cv2.minMaxLoc(gray_frame)[2]
+        max_loc = cv2.minMaxLoc(gray_frame)[3]
+
+        # Dibuja círculos en las posiciones de las zonas 8x8 más clara y oscura
+        min_x, min_y = min_loc
+        max_x, max_y = max_loc
+        cv2.circle(frame, (min_x + 4, min_y + 4), 5, (0, 0, 255), -1)  # Círculo rojo en la zona más oscura
+        cv2.circle(frame, (max_x + 4, max_y + 4), 5, (0, 255, 0), -1)  # Círculo verde en la zona más clara
+    
+
+
+        # Muestra valores RGB intentando centrar en el puntero
+        if px > -1:
+            cv2.putText(frame, '{}'.format(R), (px-45,py-5), font, 0.5, (0, 0, 255), 1)
+            cv2.putText(frame, '     {}'.format(G), (px-54,py-5), font, 0.5, (0, 255, 0), 1)
+            cv2.putText(frame, '         {}'.format(B), (px-54,py-5), font, 0.5, (255, 0, 0), 1)
+            
+        cv2.imshow('Cam', frame)   
+        
+    # Detenemos pulsado ESC
+    if cv2.waitKey(20) == 27:
+        break
+  
+# Libera el objeto de captura
+vid.release()
+# Destruye ventanas
+cv2.destroyAllWindows()
+```
+
+
+## Tarea 6: Haz tu propuesta pop art
+En esta tarea, hemos creado nuestra propia pop art, usando nuestra caméra y variamos el pixel dependiendo si el pixel es más claro o más oscuro. Se genera este pop art con algunas lineas.
+
+```python
+# Abre la cámara
+vid = cv2.VideoCapture(0)
+
+ncells = 10
+
+while True:
+    # Fotograma a fotograma
+    ret, frame = vid.read()
+
+    if ret:
+        # Dimensiones originales
+        h, w, c = frame.shape
+        # Redimensiona
+        down_frame = cv2.resize(frame, (int(w/ncells), int(h/ncells)), cv2.INTER_NEAREST)
+        # Dimensiones reducidas
+        h2, w2, c2 = down_frame.shape
+
+        # Convierte el frame redimensionado a escala de grises
+        gray_frame = cv2.cvtColor(down_frame, cv2.COLOR_BGR2GRAY)
+
+        # Crea un fondo en blanco
+        pop_art_frame = np.zeros((h2*ncells, w2*ncells, 3), dtype=np.uint8)
+
+        for y in range(h2):
+            for x in range(w2):
+                # Calcula el brillo promedio de la zona
+                avg_brightness = int(gray_frame[y, x])
+
+                # Calcula el tamaño de las líneas en función del brillo
+                line_thickness = max(1, min(int((255 - avg_brightness) / 10), cv2.LINE_AA))
+
+                # Dibuja líneas con el color blanco en la posición correspondiente en el fondo blanco
+                cv2.line(pop_art_frame, (x*ncells, y*ncells), ((x+1)*ncells, y*ncells), (255, 255, 255), line_thickness)
+                cv2.line(pop_art_frame, (x*ncells, y*ncells), (x*ncells, (y+1)*ncells), (0, 0, 0), line_thickness)
+
+
+        # Muestra las líneas en función del brillo
+        cv2.imshow('Pop Art Lines', pop_art_frame)
+
+    # Detiene la ejecución si se presiona la tecla ESC
+    if cv2.waitKey(20) == 27:
+        break
+
+# Libera el objeto de captura
+vid.release()
+# Destruye ventanas
+cv2.destroyAllWindows()
+```
 
