@@ -334,7 +334,7 @@ while True:
         # Convierte el frame redimensionado a escala de grises
         gray_frame = cv2.cvtColor(down_frame, cv2.COLOR_BGR2GRAY)
 
-        # Crea un fondo en blanco
+        # Crea una imagen negra
         pop_art_frame = np.zeros((h2*ncells, w2*ncells, 3), dtype=np.uint8)
 
         for y in range(h2):
