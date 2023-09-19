@@ -1,11 +1,15 @@
 # Práctica 1 Anadonda
 En este práctica hemos trabajado con Anaconda y OpenCV para cumplir una serie de tareas.
-Antes de completar todas las tareas, tenemos que instalar los siguientes paquetes.
-LUHFLIKHFLIKHFLIKFHLIU
+Antes de completar todas las tareas, tenemos que instalar los siguientes paquetes, para ello realizamos lo siguiente:
+```python
+import cv2  
+import numpy as np
+import matplotlib.pyplot as plt
+```
 
 ## Tarea 1:  Crea una imagen, p.e. 800x800, con la textura del tablero de ajedrez
-Para completar este trabajo, primeros hemos defindo las dimensiones de la imagén, a contunuación pintamos las casillas blancas (255) correspondientes sobre el fondo negro (0).
-Este proceso, lo metemos en un bucle de doble for, para completar de está manera la imagen completa.
+Para completar este trabajo, primeros hemos defindo las dimensiones de la imagén, a continuación pintamos las casillas blancas (255) correspondientes sobre el fondo negro (0).
+Este proceso, lo metemos en un bucle de doble for, para completar de está manera la imagen.
 ```python
 #Dimensiones de la imagen a crear
 Bancho = 800
@@ -33,9 +37,7 @@ plt.show()
 ![image](https://github.com/AcoranGonzalezMoray/VisionArtificial/assets/99484843/52ec972a-c715-441e-9461-d5340e90899e)
 
 ## Tarea 2: Crear una imagen estilo Mondrian
-Esta imagen está generado de forma estática y se han puesto las lineas de forma manual. Una vez que hemos pintado las lineas, contiuamos con rellenar los cuadros con
-su color correspondiente.
-
+Esta imagen está generada de forma estática y se han puesto las líneas de forma manual. Una vez que hemos pintado las líneas, continuamos con rellenar los cuadros con su color correspondiente.
 ```python
 #Dimensiones de la imagen a crear
 Cancho = 800
@@ -75,7 +77,7 @@ plt.show()
 ![image](https://github.com/AcoranGonzalezMoray/VisionArtificial/assets/99484843/462d4e96-5a57-4217-bf38-55c37dbd7af8)
 
 ## Tarea 3: Resuelve una de las tareas previas (a elegir) con las funciones de dibujo de OpenCV
-Para esta tarea, hemos simplemente recreado las tareas propuestas más arriba usando OpenCV. Primero, hemos recreado el tablero de ajedrez de la siguiente manera:
+Para esta tarea, hemos simplemente reproducido las tareas propuestas más arriba usando OpenCV. Primero, hemos reproducido el tablero de ajedrez de la siguiente manera:
 
 ```python
 #Crea una imagen con tres planos
@@ -149,7 +151,7 @@ plt.show()
 ![image](https://github.com/AcoranGonzalezMoray/VisionArtificial/assets/99484843/8ce70760-770f-4330-94c3-ae3a3fb112be)
 
 ## Tarea 4: Modifica de alguna forma los valores de un plano de la imagen
-Este código utiliza OpenCV para capturar video desde una cámara, ajusta el canal rojo para realzar colores no blancos en cada fotograma, y muestra dos ventanas en tiempo real: una con la imagen modificada y otra con la imagen original.
+Este código utiliza OpenCV para capturar video desde una cámara, ajusta el canal rojo para realzar colores que no son blancos en cada fotograma, y muestra dos ventanas en tiempo real: una con la imagen modificada y otra con la imagen original.
 ```python
 vid = cv2.VideoCapture(0)
   
@@ -194,8 +196,7 @@ cv2.destroyAllWindows()
 ```
 
 ## Tarea 5 - PARTE 1:  Pintar círculos en las posiciones del píxel más claro y oscuro de la imagen.
-En este código realizamos un fotograma en tiempo real usando nuestra cámera, en cada fotograma detectamos el pixel más oscuro y el más claro en escalas de grises.
-
+En este código realizamos un fotograma en tiempo real usando nuestra cámara, en cada fotograma encontramos el pixel más oscuro y el más claro en escalas de grises.
 ```python
 vid = cv2.VideoCapture(0)
 
@@ -251,8 +252,7 @@ cv2.destroyAllWindows()
 
 
 ## Tarea 5 - PARTE 2: ¿Si quisieras hacerlo sobre la zona 8x8 más clara/oscura?
-Si queremos cumplir el mismo objetivo pero sobre una zona de 8x8 más claro/oscuro, ejecutaremos el siguiente código:
-
+Para cumplir el mismo objetivo, pero sobre una zona de 8x8, se ejecutará el siguiente código:
 ```python
 vid = cv2.VideoCapture(0)
 
@@ -312,8 +312,7 @@ cv2.destroyAllWindows()
 
 
 ## Tarea 6: Haz tu propuesta pop art
-En esta tarea, hemos creado nuestra propia pop art, usando nuestra caméra y variamos el pixel dependiendo si el pixel es más claro o más oscuro. Se genera este pop art con algunas lineas.
-
+En esta tarea, hemos creado nuestra propia pop art, usando nuestra cámara y variamos el valor del pixel dependiendo si el pixel es más claro o más oscuro. Se genera este pop art con algunas líneas.
 ```python
 # Abre la cámara
 vid = cv2.VideoCapture(0)
