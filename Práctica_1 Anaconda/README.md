@@ -254,6 +254,28 @@ cv2.destroyAllWindows()
 ## Tarea 5 - PARTE 2: ¿Si quisieras hacerlo sobre la zona 8x8 más clara/oscura?
 Para cumplir el mismo objetivo, pero sobre una zona de 8x8, se ejecutará el siguiente código:
 ```python
+def find_min_max_brightness(frame):
+    #  Convierte el fotograma actual (frame) de una imagen en color (BGR) a una imagen en escala de grises.
+    #  Esto es necesario para calcular los valores más claros y oscuros de la imagen en escala de grises
+    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    max_brightness = 0
+    min_brightness = 255
+    max_brightness_coords = (0, 0)
+    min_brightness_coords = (0, 0)
+
+    for y in range(0, gray_frame.shape[0], 8):
+        for x in range(0, gray_frame.shape[1], 8):
+            block = gray_frame[y:y+8, x:x+8]
+            brightness = np.mean(block)
+            if brightness > max_brightness:
+                max_brightness = brightness
+                max_brightness_coords = (x, y)
+            if brightness < min_brightness:
+                min_brightness = brightness
+                min_brightness_coords = (x, y)
+
+    return max_brightness_coords, min_brightness_coords
+
 vid = cv2.VideoCapture(0)
 
 # Tipografía para mostrar texto
@@ -274,21 +296,12 @@ while(True):
             cv2.setMouseCallback('Cam', mouse_events)
             lanzado = 1
 
-        # Encuentra los píxeles más claros y oscuros en la imagen
+        #Encontrar la zona más brillante y la más oscura
+        zona_brillante, zona_oscura = find_min_max_brightness(frame)
         
-        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        #  Convierte el fotograma actual (frame) de una imagen en color (BGR) a una imagen en escala de grises.
-        #  Esto es necesario para calcular los valores más claros y oscuros de la imagen en escala de grises
-
-        # Encuentra las coordenadas (esquinas superiores izquierda) de las regiones más clara y oscura
-        min_loc = cv2.minMaxLoc(gray_frame)[2]
-        max_loc = cv2.minMaxLoc(gray_frame)[3]
-
-        # Dibuja círculos en las posiciones de las zonas 8x8 más clara y oscura
-        min_x, min_y = min_loc
-        max_x, max_y = max_loc
-        cv2.circle(frame, (min_x + 4, min_y + 4), 5, (0, 0, 255), -1)  # Círculo rojo en la zona más oscura
-        cv2.circle(frame, (max_x + 4, max_y + 4), 5, (0, 255, 0), -1)  # Círculo verde en la zona más clara
+        # Dibujar círculo verde en la zona más clara y circulo rojo en la más oscura
+        cv2.circle(frame, (zona_brillante[0] + 4, zona_brillante[1] + 4), 8, (0, 255, 0), -1)
+        cv2.circle(frame, (zona_oscura[0] + 4, zona_oscura[1] + 4), 8, (0, 0, 255), -1)
     
 
 
