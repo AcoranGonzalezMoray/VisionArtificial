@@ -80,7 +80,7 @@ plt.show()
 Para esta tarea, hemos simplemente reproducido las tareas propuestas más arriba usando OpenCV. Primero, hemos reproducido el tablero de ajedrez de la siguiente manera:
 
 ```python
-#Crea una imagen con tres planos
+#Crea una imagen de un plano
 jz_img= np.zeros((800,800,1), dtype = np.uint8)
 
 #Rectángulo con grosor 2
