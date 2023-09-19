@@ -1,4 +1,4 @@
-# VisionArtificial
+# Visión por Computador
 Repositorio dedicado principalmente a la asignatura 'Visión por Computador'
 
 ## Lista de Prácticas
