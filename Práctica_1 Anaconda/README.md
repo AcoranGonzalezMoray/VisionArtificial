@@ -81,12 +81,12 @@ Para esta tarea, hemos simplemente reproducido las tareas propuestas más arriba
 
 ```python
 #Crea una imagen con tres planos
-color_img = np.zeros((800,800,3), dtype = np.uint8)
+jz_img= np.zeros((800,800,1), dtype = np.uint8)
 
 #Rectángulo con grosor 2
-#cv2.rectangle(color_img,(10,10),(ancho-10,int(alto/2)),(0,255,0),2)
+#cv2.rectangle(jz_img,(10,10),(ancho-10,int(alto/2)),(0,255,0),2)
 #Rectángulo relleno
-#cv2.rectangle(color_img,(20,20),(60,40),(0,255,0),-1)
+#cv2.rectangle(jz_img,(20,20),(60,40),(0,255,0),-1)
 
 
 filas = 8
@@ -96,17 +96,17 @@ tamaño = 100
 for fila in range(filas):
     for columna in range(columnas):
         if (fila+columna)%2==0:
-            cv2.rectangle(color_img, (columna * tamaño, fila * tamaño), ((columna + 1) * tamaño, (fila + 1) * tamaño), (255, 255, 255), -1)
+            cv2.rectangle(jz_img, (columna * tamaño, fila * tamaño), ((columna + 1) * tamaño, (fila + 1) * tamaño), (255, 255, 255), -1)
             #gris_imgB[fila*tamaño:fila*tamaño+tamaño,columna*tamaño:columna*tamaño+tamaño,0] = 255
 
 
 #Visualiza sin especificar el mapa de color gris
-plt.imshow(color_img) 
+plt.imshow(jz_img) 
 plt.show()
 
 
 #Salva la imagen resultante a disco
-cv2.imwrite('imagenCVAjedrez.jpg', color_img)
+cv2.imwrite('imagenCVAjedrez.jpg', jz_im)
 ```
 ![image](https://github.com/AcoranGonzalezMoray/VisionArtificial/assets/99484843/536f1f64-24a6-47be-935f-ffdce8c9fdcc)
 
