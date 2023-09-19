@@ -165,7 +165,7 @@ while(True):
         g = frame[:,:,1]
         r = frame[:,:,2]
         
-        # Modifica el canal azul (B) ,De esta manera, solo los píxeles que no eran blancos 
+        # Modifica el canal rojo (R) usando condicional, de esta manera, solo los píxeles que no eran blancos 
         # originalmente se verán afectados, y los píxeles blancos no cambiarán de color.
         r[r < 200] += 55
 
