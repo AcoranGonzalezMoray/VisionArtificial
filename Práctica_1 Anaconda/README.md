@@ -1,134 +1,378 @@
-## Práctica 1. Primeros pasos con OpenCV
-
-### Contenidos
-
-[Instalación](#11-instalando-el-entorno-de-desarrollo)  
-[Anaconda](#111-comandos-basicos-de-anaconda)  
-[Spec-list](#112-un-environment-para-varias-practicas)  
-[Mi carpeta](#113-el-environment-en-otra-carpeta)  
-[Aspectos cubiertos](#12-aspectos-cubiertos)  
-
-### 1.1. Instalando el entorno de desarrollo  
-
-Si bien tienen libertad para seleccionar el entorno de desarrollo, mi opción escogida para mostrar
-los distintos ejemplos en el laboratorio con Python desde Windows ha sido [Anaconda](https://www.anaconda.com). Anaconda me permite crear distintos *environments* cada uno con sus paquetes particulares y versiones específicas instaladas, pudiendo desde [Visual Studio Code](https://code.visualstudio.com) ejecutar un cuaderno concreto escogiendo el *environment* que me interese. Para las personas que prefieran no utilizar Windows, comentarles que mi experiencia en Linux con [Miniconda](https://docs.conda.io/projects/miniconda/en/latest/miniconda-install.html) ha sido similar.
-
-Los equipos del laboratorio ya cuentan con Anaconda y VS Code instalados, si bien no completamente configurados para ejecutar el cuaderno de esta práctica. Conocida esta circunstancia, para poder ejecutar un primer cuaderno proporcionado tras contar en el equipo con la instalación de Anaconda y VS Code, resumo los pasos que tuve que realizar:
-
-- Lanzar VS Code (en el PC del laboratorio disponible en el escritorio)
-
-- Instalar la extensión de Python en VS Code. Desde el [enlace](https://code.visualstudio.com/docs/languages/python) con VS Code abierto me lleva al [enlace](https://marketplace.visualstudio.com/items?itemName=ms-python.python) en el *Marketplace*
-
-- Lanzar *Anaconda Prompt*
-
-- Crear el *environment* con la configuración que nos interese. Para crear uno que ejecute el cuaderno de esta práctica, sin darle muchas vueltas con una versión reciente de Python, este mes de septiembre he lanzado lo siguiente:
-
-```
-conda create --name VC_P1 python=3.11.5
+# Práctica 1 Anadonda
+En este práctica hemos trabajado con Anaconda y OpenCV para cumplir una serie de tareas.
+Antes de completar todas las tareas, tenemos que instalar los siguientes paquetes, para ello realizamos lo siguiente:
+```python
+import cv2  
+import numpy as np
+import matplotlib.pyplot as plt
 ```
 
-Me lo crea con la versión de Python escogida. Sustituye *VC_P1* por el nombre que decidas. Tras crearlo, activo e instalo un par de paquetes adicionales
+## Tarea 1:  Crea una imagen, p.e. 800x800, con la textura del tablero de ajedrez
+Para completar este trabajo, primeros hemos defindo las dimensiones de la imagén, a continuación pintamos las casillas blancas (255) correspondientes sobre el fondo negro (0).
+Este proceso, lo metemos en un bucle de doble for, para completar de está manera la imagen.
+```python
+#Dimensiones de la imagen a crear
+Bancho = 800
+Balto = 800
+#Crea una imagen de un único plano, que se interpreta como nivel de gris (0 negro, 255 blanco)
+gris_imgB = np.zeros((Bancho,Balto,1), dtype = np.uint8)
 
+#Modifica un par de zonas rectangulares de la imagen
+#gris_imgB[vertical,horizontal,0] 0 indica 1 plano, para coloes
+
+filas = 8
+columnas = 8
+tamaño = 100
+
+for fila in range(filas):
+    for columna in range(columnas):
+        if (fila+columna)%2==0:
+            gris_imgB[fila*tamaño:fila*tamaño+tamaño,columna*tamaño:columna*tamaño+tamaño] = 255
+
+#Muestra la imagen con matplotlib
+#Es necesario especificar que el mapa de color usado es de grises
+plt.imshow(gris_imgB, cmap='gray')
+plt.show()
 ```
-conda activate VC_P1
-pip install opencv-python
-pip install matplotlib
+![image](https://github.com/AcoranGonzalezMoray/VisionArtificial/assets/99484843/52ec972a-c715-441e-9461-d5340e90899e)
+
+## Tarea 2: Crear una imagen estilo Mondrian
+Esta imagen está generada de forma estática y se han puesto las líneas de forma manual. Una vez que hemos pintado las líneas, continuamos con rellenar los cuadros con su color correspondiente.
+```python
+#Dimensiones de la imagen a crear
+Cancho = 800
+Calto = 800
+#Crea una imagen de tres planos
+gris_imgC = np.zeros((Cancho,Calto,3), dtype = np.uint8)
+
+gris_imgC.fill(255)
+
+#Lineas Verticales
+gris_imgC[0:800,24:46]      =0 
+gris_imgC[0:800,700:722]    =0
+gris_imgC[0:800,178:200]    =0 
+gris_imgC[0:500,378:400]    =0
+gris_imgC[250:800,528:550]  =0 
+
+#Lineas Horizontales
+gris_imgC[250:272,0:800]    =0 
+gris_imgC[500:522,0:700]    =0 
+gris_imgC[700:722,24:800]   =0
+
+
+#Colores Formas
+gris_imgC[0:250,46:178]    = [255,255,0] 
+gris_imgC[0:250,200:378]    = [0,0,255] 
+gris_imgC[0:250,400:700]    = [255,0,0] 
+gris_imgC[272:500,550:700]    = [0,0,255] 
+gris_imgC[522:700,200:528]    = [255,0,0] 
+gris_imgC[722:800,200:528]    = [255,255,0] 
+gris_imgC[722:800,46:178]    = [0,0,255] 
+
+#Muestra la imagen con matplotlib
+#No es necesario especificar que el mapa de color usado es de grises
+plt.imshow(gris_imgC)
+plt.show()
+```
+![image](https://github.com/AcoranGonzalezMoray/VisionArtificial/assets/99484843/462d4e96-5a57-4217-bf38-55c37dbd7af8)
+
+## Tarea 3: Resuelve una de las tareas previas (a elegir) con las funciones de dibujo de OpenCV
+Para esta tarea, hemos simplemente reproducido las tareas propuestas más arriba usando OpenCV. Primero, hemos reproducido el tablero de ajedrez de la siguiente manera:
+
+```python
+#Crea una imagen de un plano
+jz_img= np.zeros((800,800,1), dtype = np.uint8)
+
+#Rectángulo con grosor 2
+#cv2.rectangle(jz_img,(10,10),(ancho-10,int(alto/2)),(0,255,0),2)
+#Rectángulo relleno
+#cv2.rectangle(jz_img,(20,20),(60,40),(0,255,0),-1)
+
+
+filas = 8
+columnas = 8
+tamaño = 100
+
+for fila in range(filas):
+    for columna in range(columnas):
+        if (fila+columna)%2==0:
+            cv2.rectangle(jz_img, (columna * tamaño, fila * tamaño), ((columna + 1) * tamaño, (fila + 1) * tamaño), (255, 255, 255), -1)
+            #gris_imgB[fila*tamaño:fila*tamaño+tamaño,columna*tamaño:columna*tamaño+tamaño,0] = 255
+
+
+#Visualiza sin especificar el mapa de color gris
+plt.imshow(jz_img) 
+plt.show()
+
+
+#Salva la imagen resultante a disco
+cv2.imwrite('imagenCVAjedrez.jpg', jz_im)
+```
+![image](https://github.com/AcoranGonzalezMoray/VisionArtificial/assets/99484843/536f1f64-24a6-47be-935f-ffdce8c9fdcc)
+
+Y a continuación, hemos recreado la otra tarea de la imgen estilo Mondrian, y hemos obtenido lo siguiente como resultado:
+
+```python
+#Crea una imagen con tres planos
+color_img = np.zeros((800,800,3), dtype = np.uint8)
+color_img.fill(255)
+
+Lancho = 800
+Lalto = 800
+
+#Rectángulo relleno
+cv2.rectangle(color_img,(200,200),(20,0),(0,0,255), -1)
+cv2.rectangle(color_img,(360,200),(750,0),(255,255,0), -1)
+cv2.rectangle(color_img,(200,450),(20,200),(255,0,0), -1)
+cv2.rectangle(color_img,(360,450),(200,750),(0,0,255), -1)
+cv2.rectangle(color_img,(750,600),(360,750),(255,255,0), -1)
+cv2.rectangle(color_img,(800,750),(360,800),(255,0,0), -1)
+cv2.rectangle(color_img,(800,200),(750,750),(0,0,255), -1)
+cv2.rectangle(color_img,(20,800),(0,200),(255,255,0), -1)
+
+#Línea roja vertical de grosor 3
+cv2.line(color_img,(int(20),0),(int(20),800),(0,0,0),13)
+cv2.line(color_img,(int(200),0),(int(200),800),(0,0,0),13)
+cv2.line(color_img,(int(750),0),(int(750),750),(0,0,0),13)
+cv2.line(color_img,(int(360),0),(int(360),800),(0,0,0),13)
+
+cv2.line(color_img,(int(800),200),(int(0),200),(0,0,0),13)
+cv2.line(color_img,(int(360),450),(int(20),450),(0,0,0),13)
+cv2.line(color_img,(int(800),200),(int(0),200),(0,0,0),13)
+cv2.line(color_img,(int(800),750),(int(200),750),(0,0,0),13)
+cv2.line(color_img,(int(750),600),(int(360),600),(0,0,0),13)
+
+
+#Visualiza sin especificar el mapa de color gris
+plt.imshow(color_img) 
+plt.show()
 ```
 
-NOTA: Para aquellas personas que quieren trabajar bajo Windows, tienen disponible en la sección 1.1.2, la descripción de creación de un *environment* con más paquetes que tendrá vida útil para varias prácticas.
+![image](https://github.com/AcoranGonzalezMoray/VisionArtificial/assets/99484843/8ce70760-770f-4330-94c3-ae3a3fb112be)
 
-Una vez que ya está el *environment* creado:
+## Tarea 4: Modifica de alguna forma los valores de un plano de la imagen
+Este código utiliza OpenCV para capturar video desde una cámara, ajusta el canal rojo para realzar colores que no son blancos en cada fotograma, y muestra dos ventanas en tiempo real: una con la imagen modificada y otra con la imagen original.
+```python
+vid = cv2.VideoCapture(0)
+  
+while(True):      
+    # fotograma a fotograma
+    ret, frame = vid.read()
 
-- Tenía en ejecución tanto VS Code como la terminal de *Anaconda Prompt*
+    if ret:
+        #Separamos canales
+        b = frame[:,:,0]
+        g = frame[:,:,1]
+        r = frame[:,:,2]
+        
+        # Modifica el canal rojo (R) usando condicional, de esta manera, solo los píxeles que no eran blancos 
+        # originalmente se verán afectados, y los píxeles blancos no cambiarán de color.
+        r[r < 200] += 55
 
-- Abro el cuaderno de la práctica en VS Code
+        # Clip para asegurarse de que los valores estén en el rango [0, 255]
+        r = np.clip(r, 0, 255)
+        
 
-- En VS Code se hace necesario lanzar su *Command Palette* con la combinación *CTRL+SHIT+Palette*
+        #Dimensiones
+        h, w, c = frame.shape
 
-- Es el momento de seleccionar el *environment* recientemente creado, tecleando *Python: Seleccionar intérprete*,  seleccionando el que nos interese.
-
-- En algunas máquinas al intentar el comando anterior, me ha aparecido un error con algo como *interpreter not found*. Lo he resuelto seleccionando en la parte inferior izquierda el modo *Trust* en lugar de *Restricted*
-
-- Una vez llegados a este punto, la primera ejecución de un cuaderno probablemente produzca un error, ya que es necesario instalar elementos necesarios para el uso de los cuadernos instalando *ipykernel*. En mi caso, VS Code ha dado error, y me propuso el siguiente comando (sugerido por VS Code) desde línea de comando. Mi experiencia desde *Anaconda Prompt* ha sido positiva al lanzarlo desde el *environment* original, es decir no desde el environment *VC_P1* sino el *base*.
-
-```
-conda install -n ENV_NAME ipykernel --update-deps --force-reinstall
-```
-
-- Llegado a este punto, ya me fue posible ejecutar el cuaderno de esta primera práctica. Cruzo los dedos, y veremos las variantes con las que nos encontramos.
-
-#### 1.1.1. Comandos básicos de Anaconda
-
-En el proceso de creación del *environment* pueden surgir errores, quizás necesitemos eliminarlo, crearlo de  nuevo, listar los existentes. Un muy breve resumen de comandos frecuentes:
-
-```
-conda info --envs # Lista environments existentes
-conda remove --name ENV_NAME --all # Elimina el environment ENV_NAME
-conda list --explicit > spec-file.txt   # genera un txt con los elementos presentes en el envopronmente activado
-```
-
-
-
-#### 1.1.2. Un environment para varias prácticas
-
-Reproduzco la instalación que está en funcionamiento en mi equipo portátil en su partición bajo Windows (no funcionará con otros sistemas operativos). Como verás, hace uso de la versión Python 3.7.3, si bien incluye
-paquetes no necesarios en las primeras prácticas. Sugiero sustituir *ENV_NAME* por un nombre de tu elección. En el caso de trabajar en otro sistema operativo, evitar incluir *spec-list.txt* e ir añadiendo los paquetes que vayan siendo necesarios.
-
-```
-conda create --name ENV_NAME python=3.7.3 --file spec-list.txt
-```
-
-El comando anterior puede requerir unos minutos. A continuación se activa *environment*
-
-```
-conda activate ENV_NAME
+        #Concateamos en horizontal los tres planos del fotograma por separado y el frame con los 3 planos superpuesto
+        collage = np.hstack((r, g, b))
+    
+        # Muestra fotograma redimensionando a la mitad para que quepa en pantalla
+        cv2.imshow('Cam3', cv2.resize(collage, (int(w*1.5),int(h/2)),cv2.INTER_NEAREST))
+        
+        #Ademas mostramos el frame original para observar que uno de los 3 planos cambio
+        cv2.imshow('Cam4', frame)
+    
+    # Detenemos pulsado ESC
+    if cv2.waitKey(20) == 27:
+        break
+  
+# Libera el objeto de captura
+vid.release()
+# Destruye ventanas
+cv2.destroyAllWindows()
 ```
 
-Y se instala algún paquete adicional necesario
+## Tarea 5 - PARTE 1:  Pintar círculos en las posiciones del píxel más claro y oscuro de la imagen.
+En este código realizamos un fotograma en tiempo real usando nuestra cámara, en cada fotograma encontramos el pixel más oscuro y el más claro en escalas de grises.
+```python
+vid = cv2.VideoCapture(0)
 
+# Tipografía para mostrar texto
+font = cv2.FONT_HERSHEY_SIMPLEX
+  
+lanzado = 0
+px = -1
+while(True):      
+    # fotograma a fotograma
+    ret, frame = vid.read()
+
+    if ret: 
+        # Activa em manejador en el primer fotograma
+        if lanzado == 0:
+            # Muestra fotograma
+            cv2.imshow('Cam', frame)   
+            # Define el nombre del manejador del evento
+            cv2.setMouseCallback('Cam', mouse_events)
+            lanzado = 1
+
+        # Encuentra los píxeles más claros y oscuros en la imagen
+        
+        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        #  Convierte el fotograma actual (frame) de una imagen en color (BGR) a una imagen en escala de grises.
+        #  Esto es necesario para calcular los valores más claros y oscuros de la imagen en escala de grises
+
+
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(gray_frame)
+        #Basicamente se obtienen los valores más claros y oscuros del frame ademas del su posicion
+
+        # Dibuja círculos en las posiciones de los píxeles más claros y oscuros
+        cv2.circle(frame, min_loc, 10, (0, 0, 255), -1)  # Círculo rojo en el píxel más oscuro
+        cv2.circle(frame, max_loc, 10, (0, 255, 0), -1)  # Círculo verde en el píxel más claro
+
+        # Muestra valores RGB intentando centrar en el puntero
+        if px > -1:
+            cv2.putText(frame, '{}'.format(R), (px-45,py-5), font, 0.5, (0, 0, 255), 1)
+            cv2.putText(frame, '     {}'.format(G), (px-54,py-5), font, 0.5, (0, 255, 0), 1)
+            cv2.putText(frame, '         {}'.format(B), (px-54,py-5), font, 0.5, (255, 0, 0), 1)
+            
+        cv2.imshow('Cam', frame)   
+        
+    # Detenemos pulsado ESC
+    if cv2.waitKey(20) == 27:
+        break
+  
+# Libera el objeto de captura
+vid.release()
+# Destruye ventanas
+cv2.destroyAllWindows()
 ```
-pip install imutils sklearn matplotlib
+
+
+## Tarea 5 - PARTE 2: ¿Si quisieras hacerlo sobre la zona 8x8 más clara/oscura?
+Para cumplir el mismo objetivo, pero sobre una zona de 8x8, se ejecutará el siguiente código:
+```python
+def find_min_max_brightness(frame):
+    #  Convierte el fotograma actual (frame) de una imagen en color (BGR) a una imagen en escala de grises.
+    #  Esto es necesario para calcular los valores más claros y oscuros de la imagen en escala de grises
+    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    max_brightness = 0
+    min_brightness = 255
+    max_brightness_coords = (0, 0)
+    min_brightness_coords = (0, 0)
+
+    for y in range(0, gray_frame.shape[0], 8):
+        for x in range(0, gray_frame.shape[1], 8):
+            block = gray_frame[y:y+8, x:x+8]
+            brightness = np.mean(block)
+            if brightness > max_brightness:
+                max_brightness = brightness
+                max_brightness_coords = (x, y)
+            if brightness < min_brightness:
+                min_brightness = brightness
+                min_brightness_coords = (x, y)
+
+    return max_brightness_coords, min_brightness_coords
+
+vid = cv2.VideoCapture(0)
+
+# Tipografía para mostrar texto
+font = cv2.FONT_HERSHEY_SIMPLEX
+  
+lanzado = 0
+px = -1
+while(True):      
+    # fotograma a fotograma
+    ret, frame = vid.read()
+
+    if ret: 
+        # Activa em manejador en el primer fotograma
+        if lanzado == 0:
+            # Muestra fotograma
+            cv2.imshow('Cam', frame)   
+            # Define el nombre del manejador del evento
+            cv2.setMouseCallback('Cam', mouse_events)
+            lanzado = 1
+
+        #Encontrar la zona más brillante y la más oscura
+        zona_brillante, zona_oscura = find_min_max_brightness(frame)
+        
+        # Dibujar círculo verde en la zona más clara y circulo rojo en la más oscura
+        cv2.circle(frame, (zona_brillante[0] + 4, zona_brillante[1] + 4), 8, (0, 255, 0), -1)
+        cv2.circle(frame, (zona_oscura[0] + 4, zona_oscura[1] + 4), 8, (0, 0, 255), -1)
+    
+
+
+        # Muestra valores RGB intentando centrar en el puntero
+        if px > -1:
+            cv2.putText(frame, '{}'.format(R), (px-45,py-5), font, 0.5, (0, 0, 255), 1)
+            cv2.putText(frame, '     {}'.format(G), (px-54,py-5), font, 0.5, (0, 255, 0), 1)
+            cv2.putText(frame, '         {}'.format(B), (px-54,py-5), font, 0.5, (255, 0, 0), 1)
+            
+        cv2.imshow('Cam', frame)   
+        
+    # Detenemos pulsado ESC
+    if cv2.waitKey(20) == 27:
+        break
+  
+# Libera el objeto de captura
+vid.release()
+# Destruye ventanas
+cv2.destroyAllWindows()
 ```
 
 
-#### 1.1.3. El environment en otra carpeta
+## Tarea 6: Haz tu propuesta pop art
+En esta tarea, hemos creado nuestra propia pop art, usando nuestra cámara y variamos el valor del pixel dependiendo si el pixel es más claro o más oscuro. Se genera este pop art con algunas líneas.
+```python
+# Abre la cámara
+vid = cv2.VideoCapture(0)
+
+ncells = 10
+
+while True:
+    # Fotograma a fotograma
+    ret, frame = vid.read()
+
+    if ret:
+        # Dimensiones originales
+        h, w, c = frame.shape
+        # Redimensiona
+        down_frame = cv2.resize(frame, (int(w/ncells), int(h/ncells)), cv2.INTER_NEAREST)
+        # Dimensiones reducidas
+        h2, w2, c2 = down_frame.shape
+
+        # Convierte el frame redimensionado a escala de grises
+        gray_frame = cv2.cvtColor(down_frame, cv2.COLOR_BGR2GRAY)
+
+        # Crea una imagen negra
+        pop_art_frame = np.zeros((h2*ncells, w2*ncells, 3), dtype=np.uint8)
+
+        for y in range(h2):
+            for x in range(w2):
+                # Calcula el brillo promedio de la zona
+                avg_brightness = int(gray_frame[y, x])
+
+                # Calcula el tamaño de las líneas en función del brillo
+                line_thickness = max(1, min(int((255 - avg_brightness) / 10), cv2.LINE_AA))
+
+                # Dibuja líneas con el color blanco en la posición correspondiente en el fondo blanco
+                cv2.line(pop_art_frame, (x*ncells, y*ncells), ((x+1)*ncells, y*ncells), (255, 255, 255), line_thickness)
+                cv2.line(pop_art_frame, (x*ncells, y*ncells), (x*ncells, (y+1)*ncells), (0, 0, 0), line_thickness)
 
 
-Tener presente que en el laboratorio, si trabajas con el ordenador del aula, el rearranque borra directorios locales, por lo que los *environments* creados localmente, desaparecen. Puede interesar por ello crearlo en una carpeta local que no se limpie, como */pub/tmp*, en un disco externo o pen propio con *--prefix flag*
-Para crear el *environment* de la subsección previa en una carpeta concrete en el PC, he procedido con los siguientes comandos:
+        # Muestra las líneas en función del brillo
+        cv2.imshow('Pop Art Lines', pop_art_frame)
 
+    # Detiene la ejecución si se presiona la tecla ESC
+    if cv2.waitKey(20) == 27:
+        break
 
+# Libera el objeto de captura
+vid.release()
+# Destruye ventanas
+cv2.destroyAllWindows()
 ```
-conda create --prefix c:/pub/tmp/JPA/FACES --file spec-list.txt python=3.7.3
-conda activate c:/pub/tmp/JPA/FACES
-pip install imutils
-pip install scikit-learn
-```
 
-
-Si algo hubiera ido mal y quisieras eliminar el *environment* para empezar de nuevo, recordar los comandos del apartado 1.1.1
-
-
-### 1.2. Aspectos cubiertos y entrega
-
-El objetivo de esta práctica en primer término es poder ejecutar el cuaderno proporcionado en nuestro propio equipo o el del laboratorio. Este primer cuaderno (VC_P1.ipynb) debe servir para comprender de forma aplicada la representación de imágenes de grises y color, su modificación, visualización y tratamiento básico. Al finalizar la práctica, debes ser capaz de crear una imagen de un determinado tamaño,
-acceder a los valores asociados a un determinado píxel, modificar dichos valores, dibujar primitivas gráficas básicas sobre una imagen, abrir una imagen de disco, así como acceder a los fotogramas de un vídeo o captura de cámara. Para todo ello, se proponen varias tareas (espero no dejarme ninguna atrás aquí):
-
-- Crear una imagen con la textura de un tablero de ajedrez
-- Crear una imagen estilo Mondrian como por ejemplo
-
-![Mondrian](https://images.squarespace-cdn.com/content/v1/5f638d3adfa9c677cced1579/1602089211975-ONZ6AALHOOPRVT7Z5ALL/Composición+en+rojo%2C+amarillo+y+azul.jpg?format=2500w)  
-*Piet Mondrian, "Composición con rojo, amarillo y azul" (1930).*
-
-- Hacer uso de las funciones de dibujo de OpenCV
-- Modificar un plano de la imagen
-- Destacar tanto el píxel con el color más claro como con el color más oscuro de una imagen
-- Hacer una propuesta pop art con la entrada de la cámara web o vídeo
-
-La entrega del cuaderno o cuadernos con la resolución de tareas propuestas e imágenes resultantes se realizará por grupos a través del campus virtual por medio de un enlace github, teniendo como límite el comienzo de la siguiente sesión práctica. Durante la siguiente sesión práctica cada grupo, en orden aleatorio, presentará y defenderá el resultado al profesor de la asignatura. De forma genérica, para todas las prácticas, el enlace github debe incluir un archivo README describiendo el trabajo realizado, incluyendo referencia a todas las fuentes que hayan sido utilizadas de alguna forma en el desarrollo de la práctica, además de indicar si la ejecución del cuaderno requiere alguna instalación adicional. Además incluirán uno o varios cuadernos comentados con la resolución de la tarea o tareas solicitadas .
-
-
-
-
-***
-Bajo licencia de Creative Commons Reconocimiento - No Comercial 4.0 Internacional
