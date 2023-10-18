@@ -1,4 +1,4 @@
-# Tareas con Imágenes de Monedas
+# Práctica 3 Resultados
 
 ## Tarea 1: Filtrado de Contornos en una Imagen de Monedas
 
@@ -26,13 +26,8 @@ En esta tarea, se lleva a cabo el procesamiento de una imagen que contiene moned
 
 Se muestra una imagen con los contornos externos, una imagen con los contornos externos rellenos y una imagen con los contornos redondos después de aplicar el filtro de redondez. Además, se imprime el número total de monedas en la imagen y los diámetros de las monedas detectadas.
 
-![Todos los contornos](imagen1.png)
+![Salida](./Capturas/Tarea1.png)
 
-![Sólo contornos externos](imagen2.png)
-
-![Externos rellenos](imagen3.png)
-
-![Contornos Redondos Con filtro](imagen4.png)
 
 **Número de Monedas:** 8
 
@@ -59,18 +54,22 @@ Se proporcionan dos versiones de la tarea: una sin el uso de HoughCircles y otra
 
 Se muestra la imagen con los contornos redondos después de aplicar el filtro de redondez en la versión sin HoughCircles. En ambas versiones, se imprime el diámetro de la moneda seleccionada, la escala actualizada, el número de monedas detectadas, los diámetros de todas las monedas y los valores correspondientes de las monedas. Finalmente, se muestra el valor total de dinero en la imagen.
 
-**Versión 1: SIN HOUGH**
+### **Versión 1: SIN HOUGH**
+#### Caso 1
+![Salida](./Capturas/Tarea2-Sol1.png)
+#### Caso 2
+![Salida](./Capturas/Tarea2-Sol2.png)
+#### Caso 3
+![Salida](./Capturas/Tarea2-Sol3.png)
 
-- Diámetro de la moneda seleccionada: 138 px
-- Escala actualizada: 24.2 / 138 = 0.17572463768115942
-- Número de Monedas: 8
-- Diametros de todas las monedas: [126.4000015258789, 134.1999969482422, 130.60000610351562, 110.5999984741211, 121.19999694824219, 113.4000015258789, 139.60000610351562, 114.5999984741211] px
-- Valores de las monedas con escala aplicada: [22.21159447103307, 23.58224584054256, 22.949638753697492, 19.435144659401715, 21.297825550687485, 19.927174181177996, 24.531160492827926, 20.13804321012635]
-- Valor Total: 3.050
 
-**Versión 2: CON HOUGH**
+### **Versión 2: CON HOUGH**
+#### Caso 3 con Hough
+![Salida](./Capturas/Tarea2-Sol4.png)
 
-- Diámetro de la moneda seleccionada: 138 px
-- Escala actualizada: 24.2 / 138 = 0.17572463768115942
-- Número de Monedas: 8
-- Diametros de todas las monedas: [126.400
+
+### Principales Problemas Observados:
+
+Dependencia de la Precisión Debido a la Calidad de la Imagen: La precisión de la detección de monedas y el cálculo de su valor dependen en gran medida de la calidad de la imagen. Imágenes borrosas o con baja resolución pueden afectar la precisión.
+
+Identificación Individual de Objetos Solapados: En imágenes con monedas solapadas, puede ser difícil identificar y medir individualmente cada moneda. En estas situaciones, se necesitan enfoques más avanzados para separar y medir las monedas de manera precisa.
