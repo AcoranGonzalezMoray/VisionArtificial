@@ -73,3 +73,50 @@ Se muestra la imagen con los contornos redondos después de aplicar el filtro de
 Dependencia de la Precisión Debido a la Calidad de la Imagen: La precisión de la detección de monedas y el cálculo de su valor dependen en gran medida de la calidad de la imagen. Imágenes borrosas o con baja resolución pueden afectar la precisión.
 
 Identificación Individual de Objetos Solapados: En imágenes con monedas solapadas, puede ser difícil identificar y medir individualmente cada moneda. En estas situaciones, se necesitan enfoques más avanzados para separar y medir las monedas de manera precisa.
+
+
+
+
+# Clasificación de Microplásticos
+
+Este repositorio contiene código y datos relacionados con la clasificación de microplásticos en imágenes utilizando propiedades geométricas. El trabajo se basa en el artículo "SMACC: A System for Microplastics Automatic Counting and Classification" y utiliza una variedad de características geométricas para clasificar microplásticos en tres categorías: Tar, Pellet y Fragment.
+
+##  Tarea 3: Determina patrones geométricos para cada una de las tres clases y evalúa los aciertos y fallos con las imágenes completas la matriz de confusión
+
+### Extracción de características geométricas
+
+Hemos extraído características geométricas de las imágenes de microplásticos. Algunas de las características que hemos calculado son:
+
+- Área en píxeles.
+- Perímetro en píxeles.
+- Compacidad (relación del cuadrado del perímetro con el área).
+- Relación del área con el del contenedor.
+- Relación del ancho y el alto del contenedor.
+- Relación entre los ejes de la elipse ajustada.
+- Definido el centroide, relación entre las distancias menor y mayor al contorno.
+
+### Clasificación de microplásticos
+
+Hemos clasificado los microplásticos en tres categorías: Tar, Pellet y Fragment. Para cada categoría, hemos determinado umbrales específicos para las características geométricas, como la relación de aspecto, el área y la longitud del eje mayor de la elipse ajustada.
+
+### Evaluación de la clasificación
+
+Hemos evaluado la clasificación de microplásticos mediante una matriz de confusión. La matriz de confusión muestra el comportamiento del clasificador para las distintas categorías y nos permite determinar el número de muestras clasificadas correctamente y el número de muestras clasificadas incorrectamente para cada categoría.
+
+## Resultados
+Hemos calculado las métricas de clasificación y mostrado los resultados en una matriz de confusión y un mapa de calor. Los resultados muestran cuántas muestras se clasificaron correctamente en cada categoría y cuántas se clasificaron incorrectamente.
+
+![Salida](./Capturas/Tarea3.png)
+
+
+## Requisitos especificos para esta ultima parte 
+
+Para ejecutar el código, necesitará las siguientes bibliotecas de Python:
+- OpenCV
+- NumPy
+- Matplotlib
+- Seaborn
+- Pandas
+
+
+
