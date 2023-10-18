@@ -1,29 +1,76 @@
-## Práctica 3. Detección de formas
+# Tareas con Imágenes de Monedas
 
-### Contenidos
+## Tarea 1: Filtrado de Contornos en una Imagen de Monedas
 
-[Aspectos cubiertos](#31-aspectos-cubiertos)
+**Descripción:**
 
-### 3.1. Aspectos cubiertos
+En esta tarea, se lleva a cabo el procesamiento de una imagen que contiene monedas, con el objetivo de filtrar los contornos que corresponden a monedas y mostrar el número total de monedas presentes en la imagen. Para realizar esto, se siguen los siguientes pasos:
 
-En esta práctica el objetivo es extraer información geométrica de los objetos presentes en una imagen. Para ello, se presentan ejemplos haciendo uso de detección de contornos y cálculo de la transformada de Hough para la detección de formas circulares.
+1. Se lee la imagen y se la convierte a escala de grises.
 
-En una primera tarea se asume que todos los objetos de interés en la imagen son circulares, en concreto monedas de la UE. Tras mostrar diversas aproximaciones para obtener sus contornos, el reto o tarea consiste en determinar la cantidad de dinero presente en la imagen.  
+2. Se aplica un umbral para obtener una imagen binaria que destaque los objetos.
 
-Para la segunda tarea, se proporcionan tres subimágenes de tres clases de microplásticos recogidos en playas canarias. La tarea propuesta consiste en determinar patrones en sus características geométricas que puedan permitir su clasificación en dichas imágenes y otras. Como fuente de partida, se proporciona enlace al trabajo [SMACC: A System for Microplastics Automatic Counting and Classification](https://doi.org/10.1109/ACCESS.2020.2970498) en el que se adoptan algunas propiedades geométricas para dicho fin. De forma resumida, las características geométricas utilizadas en dicho trabajo fueron:
+3. Se encuentran todos los contornos en la imagen, tanto los externos como los internos.
 
-- Área en píxeles
-- Perímetro en píxeles
-- Compacidad (relación del cuadrado del perímetro con el área)
-- Relación del área con la del contenedor
-- Relación del ancho y el alto del contenedor
-- Relación entre los ejes de la elipse ajustada
-- Definido el centroide, relación entre las distancias menor y mayor al contorno
+4. Se obtienen únicamente los contornos externos, que corresponden a las monedas.
 
-Si no te quedaras satisfecho con el umbralizado para separar los objetos del fondo, te animo a explorar técnicas de segmentación recientes y potentes como [Segment anything o SAM](https://segment-anything.com), y proyectos extendidos como [FastSAM](https://github.com/CASIA-IVA-Lab/FastSAM) o [Count anything](https://github.com/ylqi/Count-Anything). No dudes en comentar otras alternativas que descubras.
+5. Se dibujan los contornos tanto en la imagen original como en una imagen vacía.
 
-<!---Momentos en trabajo de Nayar sobre Binary images https://cave.cs.columbia.edu/Statics/monographs/Binary%20Images%20FPCV-1-3.pdf -->
+6. Se calcula la relación entre el área y el cuadrado del perímetro de cada contorno para filtrar las monedas, considerando un umbral de redondez.
+
+7. Se determina el valor de cada moneda en función de su diámetro.
+
+8. Se muestra la cantidad total de monedas y sus diámetros.
+
+**Resultados:**
+
+Se muestra una imagen con los contornos externos, una imagen con los contornos externos rellenos y una imagen con los contornos redondos después de aplicar el filtro de redondez. Además, se imprime el número total de monedas en la imagen y los diámetros de las monedas detectadas.
+
+![Todos los contornos](imagen1.png)
+
+![Sólo contornos externos](imagen2.png)
+
+![Externos rellenos](imagen3.png)
+
+![Contornos Redondos Con filtro](imagen4.png)
+
+**Número de Monedas:** 8
+
+**Diametros:** [87.64540100097656, 93.00223541259766, 84.38028717041016, 91.0156478881836, 93.7452392578125, 102.72354125976562, 101.63707733154297, 94.02146911621094]
 
 
-***
-Bajo licencia de Creative Commons Reconocimiento - No Comercial 4.0 Internacional
+## Tarea 2: Cálculo de Cantidad de Dinero en Imágenes de Monedas
+
+**Descripción:**
+
+En esta tarea, se procesan imágenes de monedas que pueden contener monedas solapadas y no solapadas. El objetivo es identificar una moneda de un euro en la imagen y calcular la cantidad total de dinero presente en la imagen.
+
+Se proporcionan dos versiones de la tarea: una sin el uso de HoughCircles y otra con HoughCircles. En ambas versiones, se sigue el siguiente proceso:
+
+1. Se lee la imagen y se aplica un procesamiento previo, que incluye la conversión a escala de grises y suavizado.
+
+2. En la versión sin HoughCircles, se permite al usuario seleccionar una moneda haciendo clic en ella, lo que actualiza la escala utilizada para calcular los valores de las monedas. Además, se almacenan los diámetros de todas las monedas en una lista.
+
+3. En la versión con HoughCircles, se detectan automáticamente los círculos en la imagen, se selecciona uno de ellos y se calcula la escala y los diámetros de todas las monedas detectadas.
+
+4. Se calcula el valor correspondiente a cada moneda en función de su diámetro y se suma para obtener el valor total de dinero en la imagen.
+
+**Resultados:**
+
+Se muestra la imagen con los contornos redondos después de aplicar el filtro de redondez en la versión sin HoughCircles. En ambas versiones, se imprime el diámetro de la moneda seleccionada, la escala actualizada, el número de monedas detectadas, los diámetros de todas las monedas y los valores correspondientes de las monedas. Finalmente, se muestra el valor total de dinero en la imagen.
+
+**Versión 1: SIN HOUGH**
+
+- Diámetro de la moneda seleccionada: 138 px
+- Escala actualizada: 24.2 / 138 = 0.17572463768115942
+- Número de Monedas: 8
+- Diametros de todas las monedas: [126.4000015258789, 134.1999969482422, 130.60000610351562, 110.5999984741211, 121.19999694824219, 113.4000015258789, 139.60000610351562, 114.5999984741211] px
+- Valores de las monedas con escala aplicada: [22.21159447103307, 23.58224584054256, 22.949638753697492, 19.435144659401715, 21.297825550687485, 19.927174181177996, 24.531160492827926, 20.13804321012635]
+- Valor Total: 3.050
+
+**Versión 2: CON HOUGH**
+
+- Diámetro de la moneda seleccionada: 138 px
+- Escala actualizada: 24.2 / 138 = 0.17572463768115942
+- Número de Monedas: 8
+- Diametros de todas las monedas: [126.400
