@@ -8,4 +8,5 @@ Repositorio dedicado principalmente a la asignatura 'Visión por Computador'
   <li><a href="./Práctica_3">Práctica 3</li>
   <li><a href="./Práctica_4">Práctica 4</li>
   <li><a href="./Práctica_5">Práctica 5</li>
+  <li><a href="./Práctica_6">Práctica 6</li>
 </ul>
