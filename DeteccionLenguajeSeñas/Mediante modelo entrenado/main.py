@@ -1,8 +1,17 @@
 import cv2
+import mediapipe as mp
 from ultralytics import YOLO
+import mediapipe as mp
 
 # Inicializar YOLO para la detección de lenguaje de señas
 sign_language_model = YOLO('model/best.pt')
+
+# Inicializar MediaPipe Hands
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands()
+
+# Inicializar el módulo para dibujar landmarks
+mp_drawing = mp.solutions.drawing_utils
 
 # Nombre de la clase de interés (puedes ajustar según las clases de tu modelo)
 sign_language_className = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
@@ -18,6 +27,10 @@ while True:
 
     # Realizar la detección de lenguaje de señas en el fotograma con YOLO
     sign_language_results = sign_language_model(frame)
+
+    # Detección del esqueleto de la mano con MediaPipe Hands
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    result_hands = hands.process(frame_rgb)
 
     # Para cada detección de lenguaje de señas
     for sign_r in sign_language_results:
@@ -58,6 +71,10 @@ while True:
                 class_name = sign_language_className[cls]
                 cv2.putText(frame, "Letter: " + class_name, (x1_background + 10, y1_background - 5),
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)  # Texto negro
+    # Mostrar el esqueleto de la mano
+    if result_hands.multi_hand_landmarks:
+        for hand_landmarks in result_hands.multi_hand_landmarks:
+            mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
     # Mostrar el fotograma con las detecciones en tiempo real
     cv2.imshow('Sign Language Detection', frame)
