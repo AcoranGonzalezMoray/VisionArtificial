@@ -24,7 +24,7 @@ def main():
     while True:
         # Capturar un solo fotograma
         ret, frame = cap.read()
-
+        frame = cv2.flip(frame, 1)
         # Realizar la detección de lenguaje de señas en el fotograma con YOLO
         sign_language_results = sign_language_model(frame)
 

@@ -5,8 +5,7 @@ from PIL import Image, ImageTk
 import mediapipe as mp
 import pyttsx3
 import threading
-import time
-from copy import deepcopy  # Import deepcopy
+from ultralytics import YOLO
 from Mediante_Algoritmo.funciones import clasificadorDePosiciones
 from Mediante_Algoritmo.funciones import normalizacionCords
 
@@ -18,26 +17,26 @@ class CameraApp:
         self.video_source = video_source
         self.vid = cv2.VideoCapture(self.video_source)
         self.current_letter = ""
-        self.detected_letters_str = ""  # String to store detected letters
+        self.detected_letters_str = ""
 
         self.engine = pyttsx3.init()
         voices = self.engine.getProperty('voices')
         self.engine.setProperty('voice', voices[1].id)
 
-        self.last_frame = None
+        self.algo_id = 0
+
+        # Initialize YOLO for sign language detection
+        self.sign_language_model = YOLO('../Mediante_modelo_entrenado/model/best.pt')
 
         # Create a frame for buttons
         self.button_frame = tk.Frame(window)
         self.button_frame.pack(side=tk.RIGHT, padx=10, pady=20, anchor='n')
 
-        self.apply_algo = Button(self.button_frame, text="Algoritmo", width=15, command=self.use_algoritmo)
-        self.apply_algo.pack(side=tk.TOP, pady=5)
+        self.change_algorithm = Button(self.button_frame, text="Mediante YOLO", width=15, command=self.change_algorithm)
+        self.change_algorithm.pack(side=tk.TOP, pady=5)
 
         self.button_snapshot = Button(self.button_frame, text="Read Text", width=15, command=self.read_text)
         self.button_snapshot.pack(side=tk.TOP, pady=5)
-
-        self.apply_yolo = Button(self.button_frame, text="YOLO", width=15, command=self.apply_yolo_algo)
-        self.apply_yolo.pack(side=tk.TOP, pady=5)
 
         self.speed_slider = Scale(self.button_frame, from_=10, to=200, orient=tk.HORIZONTAL, label="Speech Speed", length=200)
         self.speed_slider.set(150)  # Initial speed value
@@ -61,6 +60,10 @@ class CameraApp:
         self.label_display_letter = Label(window, text="", font=("Helvetica", 16), bd=2, relief="solid", width=50,height=5)
         self.label_display_letter.pack(pady=5)
 
+        self.sign_language_className = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+                                   "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+                                   "U", "V", "W", "X", "Y", "Z"]
+
         self.is_running = True
 
         # Create a thread for camera capture and processing
@@ -74,13 +77,22 @@ class CameraApp:
         while self.is_running:
             ret, frame = self.vid.read()
             if ret:
-                self.window.after(1, self.use_algoritmo, frame)
+                if self.algo_id == 0:
+                    self.window.after(1, self.use_algoritmo, frame)
+                else:
+                    self.window.after(1, self.use_yolo_algo, frame)
+
+    def change_algorithm(self):
+        if self.algo_id == 1:
+            self.algo_id = 0
+            self.change_algorithm.config(text="Mediante YOLO")
+        else:
+            self.algo_id = 1
+            self.change_algorithm.config(text="Mediante Algoritmo")
 
     def read_text(self):
-        text_to_read = self.label_display_letter.cget("text")  # Get text from the label
-
+        text_to_read = self.label_display_letter.cget("text")
         if text_to_read:
-            # Run text-to-speech in a separate thread
             threading.Thread(target=self.speak_text, args=(text_to_read,)).start()
 
     def speak_text(self, text):
@@ -93,8 +105,52 @@ class CameraApp:
         self.current_letter = ""
         self.label.config(text="Detected Letter: ")
 
-    def apply_yolo_algo(self):
-        return None
+    def use_yolo_algo(self, frame):
+        frame = cv2.flip(frame, 1)
+
+        # Perform sign language detection with YOLO
+        sign_language_results = self.sign_language_model(frame)
+
+        # Process YOLO results
+        for sign_r in sign_language_results:
+            boxes = sign_r.boxes
+            for box in boxes:
+                cls = int(box.cls[0])
+
+                if self.sign_language_className[cls] in ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+                                                        "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+                                                        "U", "V", "W", "X", "Y", "Z"]:
+                    x1, y1, x2, y2 = map(int, box.xyxy[0])
+
+                    text_width, text_height = cv2.getTextSize(self.sign_language_className[cls], cv2.FONT_HERSHEY_SIMPLEX, 1, 2)[0]
+
+                    background_width = 150
+                    background_height = text_height + 10
+
+                    x1_background = x1
+                    y1_background = y2 + 30
+                    x2_background = x1_background + background_width
+                    y2_background = y1_background - background_height
+
+                    cv2.rectangle(frame, (x1_background, y1_background), (x2_background, y2_background), (255, 255, 255), -1)
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 3)
+                    class_name = self.sign_language_className[cls]
+                    cv2.putText(frame, "Letter: " + class_name, (x1_background + 10, y1_background - 5), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+
+                    if class_name:
+                        self.label.config(text=f"Detected Letter: {class_name}")
+
+                        # Update detected letters string only if the letter is different
+                        if class_name != self.current_letter:
+                            self.current_letter = class_name
+                            self.detected_letters_str += " " + class_name  # Separate with a space
+
+                            # Update label_display_letter
+                            self.label_display_letter.config(text=self.detected_letters_str.strip())
+
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        self.photo = ImageTk.PhotoImage(image=Image.fromarray(rgb_frame))
+        self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
 
     def use_algoritmo(self, frame):
         lectura_actual = 0
@@ -114,9 +170,7 @@ class CameraApp:
 
             if results.multi_hand_landmarks is not None:
                 angulosid = normalizacionCords.obtenerAngulos(results, width, height)[0]
-
                 dedos = []
-
                 # pulgar externo angle
                 if angulosid[5] > 125:
                     dedos.append(1)
@@ -129,7 +183,6 @@ class CameraApp:
                 else:
                     dedos.append(0)
 
-                # 4 dedos
                 for id in range(0, 4):
                     if angulosid[id] > 90:
                         dedos.append(1)
@@ -167,9 +220,6 @@ class CameraApp:
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         self.photo = ImageTk.PhotoImage(image=Image.fromarray(rgb_frame))
         self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
-
-    def update(self):
-        return None
 
     def __del__(self):
         self.is_running = False  # Stop the camera thread
