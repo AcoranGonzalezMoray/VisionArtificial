@@ -5,6 +5,8 @@ from PIL import Image, ImageTk
 import mediapipe as mp
 import pyttsx3
 import threading
+import time
+from copy import deepcopy  # Import deepcopy
 from Mediante_Algoritmo.funciones import clasificadorDePosiciones
 from Mediante_Algoritmo.funciones import normalizacionCords
 
@@ -21,6 +23,8 @@ class CameraApp:
         self.engine = pyttsx3.init()
         voices = self.engine.getProperty('voices')
         self.engine.setProperty('voice', voices[1].id)
+
+        self.last_frame = None
 
         # Create a frame for buttons
         self.button_frame = tk.Frame(window)
@@ -64,14 +68,13 @@ class CameraApp:
         self.camera_thread.start()
 
         self.detected_letter = None
-        self.update()
         self.window.mainloop()
 
     def camera_loop(self):
         while self.is_running:
             ret, frame = self.vid.read()
             if ret:
-                self.use_algoritmo(frame)
+                self.window.after(1, self.use_algoritmo, frame)
 
     def read_text(self):
         text_to_read = self.label_display_letter.cget("text")  # Get text from the label
@@ -94,9 +97,10 @@ class CameraApp:
         return None
 
     def use_algoritmo(self, frame):
-        # Your algorithm implementation goes here
         lectura_actual = 0
+        mp_drawing = mp.solutions.drawing_utils
         mp_hands = mp.solutions.hands
+        mp_drawing_styles = mp.solutions.drawing_styles
         frame = cv2.flip(frame, 1)
         height, width, _ = frame.shape
 
@@ -151,22 +155,21 @@ class CameraApp:
                 lectura_actual = pinkY
                 print(abs(resta), pinkY, lectura_actual)
 
+                for hand_landmarks in results.multi_hand_landmarks:
+                    mp_drawing.draw_landmarks(
+                        frame,
+                        hand_landmarks,
+                        mp_hands.HAND_CONNECTIONS,
+                        mp_drawing_styles.get_default_hand_landmarks_style(),
+                        mp_drawing_styles.get_default_hand_connections_style())
+
+        # Display the updated frame on the Tkinter canvas
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        self.photo = ImageTk.PhotoImage(image=Image.fromarray(rgb_frame))
+        self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
+
     def update(self):
-        ret, frame = self.vid.read()
-
-        if ret:
-            # Convert the OpenCV BGR image to RGB
-            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-            # Display the camera feed on the Tkinter canvas
-            self.photo = ImageTk.PhotoImage(image=Image.fromarray(rgb_frame))
-            self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
-
-            # Replace the call to main.mainFunction() with self.use_algoritmo()
-            self.use_algoritmo(frame)
-
-        # Schedule the update after 10 milliseconds (you can adjust this value)
-        self.window.after(10, self.update)
+        return None
 
     def __del__(self):
         self.is_running = False  # Stop the camera thread
