@@ -24,9 +24,11 @@ class CameraApp:
         self.engine.setProperty('voice', voices[1].id)
 
         self.algo_id = 0
+        self.selector_state = tk.BooleanVar()
 
         # Initialize YOLO for sign language detection
         self.sign_language_model = YOLO('../Mediante_modelo_entrenado/model/best.pt')
+
 
         # Create a frame for buttons
         self.button_frame = tk.Frame(window)
@@ -38,11 +40,18 @@ class CameraApp:
         self.button_snapshot = Button(self.button_frame, text="Read Text", width=15, command=self.read_text)
         self.button_snapshot.pack(side=tk.TOP, pady=5)
 
+        self.label_state = tk.Label(window, text="State: Off", font=("Helvetica", 12))
+        self.label_state.pack(side=tk.RIGHT, pady=5)
+
+        # Create a Checkbutton (boolean selector)
+        self.selector = tk.Checkbutton(window, text="On/Off", variable=self.selector_state, command=self.readCurrentLetter)
+        self.selector.pack(side=tk.RIGHT, pady=5)
+
         self.speed_slider = Scale(self.button_frame, from_=10, to=200, orient=tk.HORIZONTAL, label="Speech Speed", length=200)
-        self.speed_slider.set(150)  # Initial speed value
+        self.speed_slider.set(150)
         self.speed_slider.pack(side=tk.TOP, pady=5)
 
-        self.button_reset = Button(self.button_frame, text="Reset Word", width=15, command=self.reset_word)
+        self.button_reset = Button(self.button_frame, text="Reset TextBox", width=15, command=self.reset_textBox)
         self.button_reset.pack(side=tk.TOP, pady=5)
 
         self.lectura_actual = 0
@@ -57,7 +66,7 @@ class CameraApp:
         self.label = Label(window, text="Detected Letter: ", font=("Helvetica", 16))
         self.label.pack(pady=10)
 
-        self.label_display_letter = Label(window, text="", font=("Helvetica", 16), bd=2, relief="solid", width=50,height=5)
+        self.label_display_letter = Label(window, text="", font=("Helvetica", 16), bd=2, relief="solid", width=50, height=5, wraplength=300, justify=tk.CENTER)
         self.label_display_letter.pack(pady=5)
 
         self.sign_language_className = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
@@ -65,6 +74,7 @@ class CameraApp:
                                    "U", "V", "W", "X", "Y", "Z"]
 
         self.is_running = True
+        self.auto_read = False
 
         # Create a thread for camera capture and processing
         self.camera_thread = threading.Thread(target=self.camera_loop)
@@ -95,15 +105,30 @@ class CameraApp:
         if text_to_read:
             threading.Thread(target=self.speak_text, args=(text_to_read,)).start()
 
+    def readCurrentLetter(self):
+        selected_state = self.selector_state.get()
+        if selected_state:
+            # text_to_read = self.current_letter
+            # threading.Thread(target=self.speak_text, args=(text_to_read,)).start()
+            self.auto_read = True
+            return
+        self.auto_read = False
+        return
+
     def speak_text(self, text):
         # Set the speech speed before saying the text
         self.engine.setProperty('rate', self.speed_slider.get())
         self.engine.say(text)
-        self.engine.runAndWait()
+        try:
+            self.engine.runAndWait()
+        except Exception as e:
+            print(f"Speach is busy, hold a second: {e}")
 
-    def reset_word(self):
+    def reset_textBox(self):
         self.current_letter = ""
-        self.label.config(text="Detected Letter: ")
+        self.detected_letters_str = ""
+        self.label_display_letter.config(text="")
+
 
     def use_yolo_algo(self, frame):
         frame = cv2.flip(frame, 1)
@@ -140,8 +165,10 @@ class CameraApp:
                     if class_name:
                         self.label.config(text=f"Detected Letter: {class_name}")
 
-                        # Update detected letters string only if the letter is different
-                        if class_name != self.current_letter:
+                        if (self.auto_read):
+                            threading.Thread(target=self.speak_text, args=(class_name,)).start()
+
+                        elif class_name != self.current_letter:
                             self.current_letter = class_name
                             self.detected_letters_str += " " + class_name  # Separate with a space
 
@@ -194,8 +221,11 @@ class CameraApp:
                 if detectedLetter:
                     self.label.config(text=f"Detected Letter: {detectedLetter}")
 
+                    if (self.auto_read):
+                        threading.Thread(target=self.speak_text, args=(detectedLetter,)).start()
+
                     # Update detected letters string only if the letter is different
-                    if detectedLetter != self.current_letter:
+                    elif detectedLetter != self.current_letter:
                         self.current_letter = detectedLetter
                         self.detected_letters_str += " " + detectedLetter  # Separate with a space
 
