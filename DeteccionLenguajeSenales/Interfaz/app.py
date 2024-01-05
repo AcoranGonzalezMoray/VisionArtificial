@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import Label, Button, Scale, Canvas
+from en tu import Label, Button, Scale, Canvas
 import cv2
 from PIL import Image, ImageTk
 import mediapipe as mp
@@ -29,7 +29,6 @@ class CameraApp:
         # Initialize YOLO for sign language detection
         self.sign_language_model = YOLO('../Mediante_modelo_entrenado/model/best.pt')
 
-
         # Create a frame for buttons
         self.button_frame = tk.Frame(window)
         self.button_frame.pack(side=tk.RIGHT, padx=10, pady=20, anchor='n')
@@ -40,38 +39,39 @@ class CameraApp:
         self.button_snapshot = Button(self.button_frame, text="Read Text", width=15, command=self.read_text)
         self.button_snapshot.pack(side=tk.TOP, pady=5)
 
-        self.label_state = tk.Label(window, text="State: Off", font=("Helvetica", 12))
-        self.label_state.pack(side=tk.RIGHT, pady=5)
+        label_speed = Label(self.button_frame, text="Speech Speed", font=("Helvetica", 10))
+        label_speed.pack(side=tk.TOP, pady=5)
 
-        # Create a Checkbutton (boolean selector)
-        self.selector = tk.Checkbutton(window, text="On/Off", variable=self.selector_state, command=self.readCurrentLetter)
-        self.selector.pack(side=tk.RIGHT, pady=5)
-
-        self.speed_slider = Scale(self.button_frame, from_=10, to=200, orient=tk.HORIZONTAL, label="Speech Speed", length=200)
+        self.speed_slider = Scale(self.button_frame, from_=10, to=200, orient=tk.HORIZONTAL, length=200)
         self.speed_slider.set(150)
         self.speed_slider.pack(side=tk.TOP, pady=5)
 
         self.button_reset = Button(self.button_frame, text="Reset TextBox", width=15, command=self.reset_textBox)
         self.button_reset.pack(side=tk.TOP, pady=5)
 
+        self.selector = tk.Checkbutton(self.button_frame, text="On/Off", variable=self.selector_state,
+                                       command=self.readCurrentLetter)
+        self.selector.pack(side=tk.TOP, pady=5)
+
         self.lectura_actual = 0
         self.mp_drawing = mp.solutions.drawing_utils
         self.mp_hands = mp.solutions.hands
         self.mp_drawing_styles = mp.solutions.drawing_styles
 
-        # Create a canvas for camera feed
+        # Create a canvas for the camera feed
         self.canvas = Canvas(window, width=self.vid.get(3), height=self.vid.get(4))
         self.canvas.pack(side=tk.TOP)
 
         self.label = Label(window, text="Detected Letter: ", font=("Helvetica", 16))
         self.label.pack(pady=10)
 
-        self.label_display_letter = Label(window, text="", font=("Helvetica", 16), bd=2, relief="solid", width=50, height=5, wraplength=300, justify=tk.CENTER)
+        self.label_display_letter = Label(window, text="", font=("Helvetica", 16), bd=2, relief="solid", width=50,
+                                          height=5, wraplength=300, justify=tk.CENTER)
         self.label_display_letter.pack(pady=5)
 
         self.sign_language_className = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-                                   "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-                                   "U", "V", "W", "X", "Y", "Z"]
+                                        "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+                                        "U", "V", "W", "X", "Y", "Z"]
 
         self.is_running = True
         self.auto_read = False
