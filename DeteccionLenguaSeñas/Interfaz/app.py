@@ -84,12 +84,25 @@ class CameraApp:
         self.window.mainloop()
 
     def camera_loop(self):
-        while self.is_running:
-            ret, frame = self.vid.read()
-            if ret:
-                if self.algo_id == 0:
-                    self.window.after(1, self.use_algoritmo, frame)
-                else:
+        if self.algo_id == 0:
+            lectura_actual = 0
+            mp_drawing = mp.solutions.drawing_utils
+            mp_hands = mp.solutions.hands
+            mp_drawing_styles = mp.solutions.drawing_styles
+
+            # Process the frame with the hand tracking algorithm
+            with mp_hands.Hands(
+                    static_image_mode=False,
+                    max_num_hands=1,
+                    min_detection_confidence=0.75) as hands:
+                while self.is_running:
+                    ret, frame = self.vid.read()
+                    if ret:
+                            self.window.after(0, self.use_algoritmo, frame, lectura_actual, hands,mp_hands, mp_drawing,mp_drawing_styles )
+        else:
+            while self.is_running:
+                ret, frame = self.vid.read()
+                if ret:
                     self.window.after(1, self.use_yolo_algo, frame)
 
     def change_algorithm(self):
@@ -179,84 +192,73 @@ class CameraApp:
         self.photo = ImageTk.PhotoImage(image=Image.fromarray(rgb_frame))
         self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
 
-    def use_algoritmo(self, frame):
-        lectura_actual = 0
-        mp_drawing = mp.solutions.drawing_utils
-        mp_hands = mp.solutions.hands
-        mp_drawing_styles = mp.solutions.drawing_styles
+    def use_algoritmo(self, frame, lectura_actual,hands, mp_hands,mp_drawing, mp_drawing_styles):
         frame = cv2.flip(frame, 1)
         height, width, _ = frame.shape
+        results = hands.process(frame)
 
-        # Process the frame with the hand tracking algorithm
-        with mp_hands.Hands(
-                static_image_mode=False,
-                max_num_hands=1,
-                min_detection_confidence=0.75) as hands:
+        if results.multi_hand_landmarks is not None:
+            angulosid = normalizacionCords.obtenerAngulos(results, width, height)[0]
+            dedos = []
+            # pulgar externo angle
+            if angulosid[5] > 125:
+                dedos.append(1)
+            else:
+                dedos.append(0)
 
-            results = hands.process(frame)
+            # pulgar interno
+            if angulosid[4] > 150:
+                dedos.append(1)
+            else:
+                dedos.append(0)
 
-            if results.multi_hand_landmarks is not None:
-                angulosid = normalizacionCords.obtenerAngulos(results, width, height)[0]
-                dedos = []
-                # pulgar externo angle
-                if angulosid[5] > 125:
+            for id in range(0, 4):
+                if angulosid[id] > 90:
                     dedos.append(1)
                 else:
                     dedos.append(0)
 
-                # pulgar interno
-                if angulosid[4] > 150:
-                    dedos.append(1)
+            for hand_landmarks in results.multi_hand_landmarks:
+                perfil = False
+                # //////////////////////////////////////////////////////////////////////////////////s
+                landmarks_3d = hand_landmarks.landmark
+                x, y, z = landmarks_3d[0].x, landmarks_3d[0].y, landmarks_3d[0].z
+
+                if z < 3.0e-07:
+                    perfil = True
+                    print("La mano está de perfil.")
                 else:
-                    dedos.append(0)
-
-                for id in range(0, 4):
-                    if angulosid[id] > 90:
-                        dedos.append(1)
-                    else:
-                        dedos.append(0)
-
-                for hand_landmarks in results.multi_hand_landmarks:
                     perfil = False
-                    # //////////////////////////////////////////////////////////////////////////////////s
-                    landmarks_3d = hand_landmarks.landmark
-                    x, y, z = landmarks_3d[0].x, landmarks_3d[0].y, landmarks_3d[0].z
+                    print("La mano no está de perfil.")
+                # //////////////////////////////////////////////////////////////////////////////////s
+                dedos, detectedLetter = clasificadorDePosiciones.clasificadorDePosiciones(dedos, frame,perfil)
 
-                    if z < 3.0e-07:
-                        perfil = True
-                        print("La mano está de perfil.")
-                    else:
-                        perfil = False
-                        print("La mano no está de perfil.")
-                    # //////////////////////////////////////////////////////////////////////////////////s
-                    dedos, detectedLetter = clasificadorDePosiciones.clasificadorDePosiciones(dedos, frame,perfil)
+                if detectedLetter:
+                    self.label.config(text=f"Detected Letter: {detectedLetter}")
 
-                    if detectedLetter:
-                        self.label.config(text=f"Detected Letter: {detectedLetter}")
+                    if (self.auto_read):
+                        threading.Thread(target=self.speak_text, args=(detectedLetter,)).start()
 
-                        if (self.auto_read):
-                            threading.Thread(target=self.speak_text, args=(detectedLetter,)).start()
+                    # Update detected letters string only if the letter is different
+                    elif detectedLetter != self.current_letter:
+                        self.current_letter = detectedLetter
+                        self.detected_letters_str += " " + detectedLetter  # Separate with a space
 
-                        # Update detected letters string only if the letter is different
-                        elif detectedLetter != self.current_letter:
-                            self.current_letter = detectedLetter
-                            self.detected_letters_str += " " + detectedLetter  # Separate with a space
+                        # Update label_display_letter
+                        self.label_display_letter.config(text=self.detected_letters_str.strip())
 
-                            # Update label_display_letter
-                            self.label_display_letter.config(text=self.detected_letters_str.strip())
+                pinky = normalizacionCords.obtenerAngulos(results, width, height)[1]
+                pinkY = pinky[1] + pinky[0]
+                resta = pinkY - lectura_actual
+                lectura_actual = pinkY
+                print(abs(resta), pinkY, lectura_actual)
 
-                    pinky = normalizacionCords.obtenerAngulos(results, width, height)[1]
-                    pinkY = pinky[1] + pinky[0]
-                    resta = pinkY - lectura_actual
-                    lectura_actual = pinkY
-                    print(abs(resta), pinkY, lectura_actual)
-
-                    mp_drawing.draw_landmarks(
-                        frame,
-                        hand_landmarks,
-                        mp_hands.HAND_CONNECTIONS,
-                        mp_drawing_styles.get_default_hand_landmarks_style(),
-                        mp_drawing_styles.get_default_hand_connections_style())
+                mp_drawing.draw_landmarks(
+                    frame,
+                    hand_landmarks,
+                    mp_hands.HAND_CONNECTIONS,
+                    mp_drawing_styles.get_default_hand_landmarks_style(),
+                    mp_drawing_styles.get_default_hand_connections_style())
 
         # Display the updated frame on the Tkinter canvas
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
