@@ -100,7 +100,7 @@ class CameraApp:
                     if(self.algo_id == 0):
                         self.window.after(0, self.use_algoritmo, frame, lectura_actual, hands,mp_hands, mp_drawing,mp_drawing_styles )
                     else:
-                        self.window.after(1, self.use_yolo_algo, frame)
+                        self.window.after(1, self.use_yolo_algo, frame, hands, mp_drawing, mp_hands)
 
 
     def change_algorithm(self):
@@ -141,8 +141,12 @@ class CameraApp:
         self.label_display_letter.config(text="")
 
 
-    def use_yolo_algo(self, frame):
+    def use_yolo_algo(self, frame, hands, mp_drawing, mp_hands):
         frame = cv2.flip(frame, 1)
+
+        # Detección del esqueleto de la mano con MediaPipe Hands
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        result_hands = hands.process(frame_rgb)
 
         # Perform sign language detection with YOLO
         sign_language_results = self.sign_language_model(frame)
@@ -152,7 +156,7 @@ class CameraApp:
             boxes = sign_r.boxes
             for box in boxes:
                 cls = int(box.cls[0])
-
+                #confidence_threshold = 0.60
                 if self.sign_language_className[cls] in ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
                                                         "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
                                                         "U", "V", "W", "X", "Y", "Z"]:
@@ -185,7 +189,10 @@ class CameraApp:
 
                             # Update label_display_letter
                             self.label_display_letter.config(text=self.detected_letters_str.strip())
-
+            # Mostrar el esqueleto de la mano
+            if result_hands.multi_hand_landmarks:
+                for hand_landmarks in result_hands.multi_hand_landmarks:
+                    mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         self.photo = ImageTk.PhotoImage(image=Image.fromarray(rgb_frame))
         self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
