@@ -84,26 +84,24 @@ class CameraApp:
         self.window.mainloop()
 
     def camera_loop(self):
-        if self.algo_id == 0:
-            lectura_actual = 0
-            mp_drawing = mp.solutions.drawing_utils
-            mp_hands = mp.solutions.hands
-            mp_drawing_styles = mp.solutions.drawing_styles
+        lectura_actual = 0
+        mp_drawing = mp.solutions.drawing_utils
+        mp_hands = mp.solutions.hands
+        mp_drawing_styles = mp.solutions.drawing_styles
 
-            # Process the frame with the hand tracking algorithm
-            with mp_hands.Hands(
-                    static_image_mode=False,
-                    max_num_hands=1,
-                    min_detection_confidence=0.75) as hands:
-                while self.is_running:
-                    ret, frame = self.vid.read()
-                    if ret:
-                            self.window.after(0, self.use_algoritmo, frame, lectura_actual, hands,mp_hands, mp_drawing,mp_drawing_styles )
-        else:
+        # Process the frame with the hand tracking algorithm
+        with mp_hands.Hands(
+                static_image_mode=False,
+                max_num_hands=1,
+                min_detection_confidence=0.75) as hands:
             while self.is_running:
                 ret, frame = self.vid.read()
                 if ret:
-                    self.window.after(1, self.use_yolo_algo, frame)
+                    if(self.algo_id == 0):
+                        self.window.after(0, self.use_algoritmo, frame, lectura_actual, hands,mp_hands, mp_drawing,mp_drawing_styles )
+                    else:
+                        self.window.after(1, self.use_yolo_algo, frame)
+
 
     def change_algorithm(self):
         if self.algo_id == 1:
